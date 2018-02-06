@@ -75,7 +75,7 @@ getIndiceDeSentimentoReactions <- function(reactions){
 
 #workdir <- "/srv/shiny-server/cns/BadogueExcel"
 #workdir <- "/home/cdesantana/DataSCOUT/Objectiva/BadogueExcel"
-workdir <- system("cat ~/auxfiles/myworkdir",intern=TRUE)
+workdir <- system("cat /home/ubuntu/auxfiles/myworkdir",intern=TRUE)
 setwd(workdir)
 reactions_timeseries_filename <- file.path(workdir,"reactions_per_time.xlsx") 
 comments_timeseries_filename <- file.path(workdir,"comments_per_time.xlsx") 

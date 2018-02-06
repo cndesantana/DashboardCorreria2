@@ -151,11 +151,7 @@ function(input, output, session) {
     )
   })
 
-  output$downloadExcelData <- downloadHandler(
-     filename = function() {
-        comments_timeseries_filename;
-     },
-     content = function(file) {
+  eventReactive(input$downloadExcelData,{
         url <- input$urlpost
         id_pagina <- getFBID(url)
         data <- input$date
@@ -181,7 +177,7 @@ function(input, output, session) {
         
         write.xlsx(df_reactions, file=reactions_timeseries_filename)        
         write.xlsx(post_comments, file=comments_timeseries_filename)    
-     })
+  })
   
   
   plotReactionsTS = function(){
