@@ -91,7 +91,7 @@ function(input, output, session) {
      
      id_post <- mypage$id[which(as.character(mypage$link)%in%url)]
      
-     post_dados <- getPost(id_post, token=fb_oauth, n= 100000, reactions=TRUE, api="v2.12")
+     post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
      sufix <- paste(
         as.character(format(Sys.time(),"%d%m%Y")),
         digest(input$url),
@@ -100,6 +100,11 @@ function(input, output, session) {
      saveData(post_dados$reactions,names(post_dados$reactions),prefix="reactions",sufix)
      
   })
+  
+  randomVals <- eventReactive(input$update, {
+     runif(10)
+  })
+  
 
   ####### DISTRIBUIÇÃO DAS REAÇÕES
 
@@ -110,27 +115,30 @@ function(input, output, session) {
         digest(input$url),
         sep="");
      prefix <- "reactions";
-     reactions_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
-     if(file.exists(reactions_timeseries_filename)){
-        post_reactions <- read.csv(reactions_timeseries_filename,sep=",")
-        reactions <- c("LIKE","LOVE","HAHA","WOW","SAD", "ANGRY")
-        counts <- array(0, length(reactions))
-        for(i in 1:length(reactions)){
-           reac <- reactions[i]
-           pos_reactions <- which(reac == names(table(post_reactions$from_type)))
-           if(length(pos_reactions) == 0){
-              counts[i] <- 0
-           }else{
-              counts[i] <- as.integer(table(post_reactions$from_type))[pos_reactions]
+     reactions_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix))         
+     cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
+     if(length(randomVals()) > 0){
+        if(file.exists(reactions_timeseries_filename)){
+           post_reactions <- read.csv(reactions_timeseries_filename,sep=",")
+           reactions <- c("LIKE","LOVE","HAHA","WOW","SAD", "ANGRY")
+           counts <- array(0, length(reactions))
+           for(i in 1:length(reactions)){
+              reac <- reactions[i]
+              pos_reactions <- which(reac == names(table(post_reactions$from_type)))
+              if(length(pos_reactions) == 0){
+                 counts[i] <- 0
+              }else{
+                 counts[i] <- as.integer(table(post_reactions$from_type))[pos_reactions]
+              }
            }
+   
+           ggplot() + 
+              geom_bar(stat="identity", aes(x=reactions, y = counts)) + 
+              xlab("Reações") + 
+              ylab("Número de Ocorrências") + 
+              coord_flip()
+           }        
         }
-
-        ggplot() + 
-           geom_bar(stat="identity", aes(x=reactions, y = counts)) + 
-           xlab("Reações") + 
-           ylab("Número de Ocorrências") + 
-           coord_flip()
-     }
   })
 
   plotReactionsTS = function(){
@@ -183,35 +191,38 @@ function(input, output, session) {
         digest(input$url),
         sep="");
      prefix <- "comments";
-     comments_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
-     if(file.exists(comments_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
-        
-        timeseries <- comments_dataframe %>% mutate(
-           day = ymd_hms(created_time) %>%
-              as.Date() %>%
-              format("%d"), 
-           month = ymd_hms(created_time) %>%
-              as.Date() %>%
-              format("%m"), 
-           year = ymd_hms(created_time) %>%
-              as.Date() %>%
-              format("%Y"), 
-           hour = ymd_hms(created_time) %>%
-              format("%H"),
-           hour = as.numeric(hour) - 3,
-           hour = as.character(hour), 
-           min = ymd_hms(created_time) %>%
-              format("%M")
-        ) %>%
-           mutate(date = as.POSIXct(paste(paste(day,month,year,sep="/"),paste(hour,min,sep=":")),format = "%d/%m/%Y %H:%M")) %>%
-           group_by(date) %>%
-           summarise(total = n()) %>% head(72)
-        
-        myx <- timeseries$date
-        mydate <- format(as.POSIXct(myx), format="%d/%m/%Y %H:%M")
-        myy <- timeseries$total
-        ggplot(timeseries) + geom_line(stat = "identity", aes(x = date, y = total)) + ylab("Comentários por minuto") + xlab("Tempo")
+     comments_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix))
+     cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
+     if(length(randomVals()) > 0){
+        if(file.exists(comments_timeseries_filename)){
+           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+           
+           timeseries <- comments_dataframe %>% mutate(
+              day = ymd_hms(created_time) %>%
+                 as.Date() %>%
+                 format("%d"), 
+              month = ymd_hms(created_time) %>%
+                 as.Date() %>%
+                 format("%m"), 
+              year = ymd_hms(created_time) %>%
+                 as.Date() %>%
+                 format("%Y"), 
+              hour = ymd_hms(created_time) %>%
+                 format("%H"),
+              hour = as.numeric(hour) - 3,
+              hour = as.character(hour), 
+              min = ymd_hms(created_time) %>%
+                 format("%M")
+           ) %>%
+              mutate(date = as.POSIXct(paste(paste(day,month,year,sep="/"),paste(hour,min,sep=":")),format = "%d/%m/%Y %H:%M")) %>%
+              group_by(date) %>%
+              summarise(total = n()) %>% head(72)
+           
+           myx <- timeseries$date
+           mydate <- format(as.POSIXct(myx), format="%d/%m/%Y %H:%M")
+           myy <- timeseries$total
+           ggplot(timeseries) + geom_line(stat = "identity", aes(x = date, y = total)) + ylab("Comentários por minuto") + xlab("Tempo")
+        }
      }
   })
   
@@ -297,15 +308,18 @@ function(input, output, session) {
         sep="");
      prefix <- "comments";
      comments_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
-     if(file.exists(comments_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
-        
-        text <- as.character(comments_dataframe$message)
-        mydfm <- getDFMatrix(text);
-        set.seed(100)
-        textplot_wordcloud(mydfm, min.freq = 3, random.order = FALSE,
-                           rot.per = .25, 
-                           colors = RColorBrewer::brewer.pal(8,"Dark2"))
+     cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
+     if(length(randomVals()) > 0){
+        if(file.exists(comments_timeseries_filename)){
+           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+           
+           text <- as.character(comments_dataframe$message)
+           mydfm <- getDFMatrix(text);
+           set.seed(100)
+           textplot_wordcloud(mydfm, min.freq = 3, random.order = FALSE,
+                              rot.per = .25, 
+                              colors = RColorBrewer::brewer.pal(8,"Dark2"))
+        }
      }
   })
   
@@ -331,22 +345,25 @@ function(input, output, session) {
         sep="");
      prefix <- "comments";
      comments_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
-     if(file.exists(comments_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
-        text <- as.character(comments_dataframe$message)
-        
-        unigram <- getUnigram(text)
-        unigram %>% 
-           filter(!is.na(words)) %>% 
-           select(words) %>% group_by(words) %>% 
-           summarise(total = n()) %>% 
-           arrange(total) %>% tail(20) %>% 
-           ggplot(aes(reorder(words,total), total)) +
-           geom_bar(stat = "identity") + 
-           xlab("Palavras") + ylab("Frequência") +
-           ggtitle("Palavras mais frequentes") +
-           geom_text( aes (x = reorder(words,as.numeric(total)), y = total, label = total ) , vjust = 0, hjust = 0, size = 2 ) + 
-           coord_flip()
+     cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
+     if(length(randomVals()) > 0){
+        if(file.exists(comments_timeseries_filename)){
+           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+           text <- as.character(comments_dataframe$message)
+           
+           unigram <- getUnigram(text)
+           unigram %>% 
+              filter(!is.na(words)) %>% 
+              select(words) %>% group_by(words) %>% 
+              summarise(total = n()) %>% 
+              arrange(total) %>% tail(20) %>% 
+              ggplot(aes(reorder(words,total), total)) +
+              geom_bar(stat = "identity") + 
+              xlab("Palavras") + ylab("Frequência") +
+              ggtitle("Palavras mais frequentes") +
+              geom_text( aes (x = reorder(words,as.numeric(total)), y = total, label = total ) , vjust = 0, hjust = 0, size = 2 ) + 
+              coord_flip()
+        }
      }
   })
   
@@ -400,28 +417,32 @@ function(input, output, session) {
      prefix <- "comments";
      comments_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
      prefix <- "reactions";
-     reactions_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
-     if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
-        reactions_dataframe <- read.csv(reactions_timeseries_filename,sep=",")
-        comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
-        
-        comments_dataframe <- comments_dataframe %>% filter(from_type == "LOVE")
-        if(length(comments_dataframe$from_type) > 0){
-           text <- as.character(comments_dataframe$message)
-        
-           unigram <- getUnigram(text)
-           unigram %>% 
-              filter(!is.na(words)) %>% 
-              select(words) %>% group_by(words) %>% 
-              summarise(total = n()) %>% 
-              arrange(total) %>% tail(20) %>% 
-              ggplot(aes(reorder(words,total), total)) +
-              geom_bar(stat = "identity", fill = corpositivo) + 
-              xlab("Palavras") + ylab("Frequência") +
-              ggtitle("Palavras mais frequentes") +
-              geom_text( aes (x = reorder(words,as.numeric(total)), y = total, label = total ) , vjust = 0, hjust = 0, size = 2 ) + 
-              coord_flip()
+     reactions_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix))
+     
+     cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
+     if(length(randomVals()) > 0){
+        if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){      
+           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+           reactions_dataframe <- read.csv(reactions_timeseries_filename,sep=",")
+           comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
+           
+           comments_dataframe <- comments_dataframe %>% filter(from_type == "LOVE")
+           if(length(comments_dataframe$from_type) > 0){
+              text <- as.character(comments_dataframe$message)
+           
+              unigram <- getUnigram(text)
+              unigram %>% 
+                 filter(!is.na(words)) %>% 
+                 select(words) %>% group_by(words) %>% 
+                 summarise(total = n()) %>% 
+                 arrange(total) %>% tail(20) %>% 
+                 ggplot(aes(reorder(words,total), total)) +
+                 geom_bar(stat = "identity", fill = corpositivo) + 
+                 xlab("Palavras") + ylab("Frequência") +
+                 ggtitle("Palavras mais frequentes + LOVE") +
+                 geom_text( aes (x = reorder(words,as.numeric(total)), y = total, label = total ) , vjust = 0, hjust = 0, size = 2 ) + 
+                 coord_flip()
+           }
         }
      }
   })
@@ -453,7 +474,7 @@ function(input, output, session) {
               ggplot(aes(reorder(words,total), total)) +
               geom_bar(stat = "identity", fill = corpositivo) + 
               xlab("Palavras") + ylab("Frequência") +
-              ggtitle("Palavras mais frequentes") +
+              ggtitle("Palavras mais frequentes + LOVE") +
               geom_text( aes (x = reorder(words,as.numeric(total)), y = total, label = total ) , vjust = 0, hjust = 0, size = 2 ) + 
               coord_flip()
            }
@@ -485,27 +506,31 @@ function(input, output, session) {
      comments_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
      prefix <- "reactions";
      reactions_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
-     if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
-        reactions_dataframe <- read.csv(reactions_timeseries_filename,sep=",")
-        comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
-        
-        comments_dataframe <- comments_dataframe %>% filter(from_type == "ANGRY")
-        if(length(comments_dataframe$from_type) > 0){
-           text <- as.character(comments_dataframe$message)
+     
+     cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
+     if(length(randomVals()) > 0){
+        if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){      
+           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+           reactions_dataframe <- read.csv(reactions_timeseries_filename,sep=",")
+           comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
            
-           unigram <- getUnigram(text)
-           unigram %>% 
-              filter(!is.na(words)) %>% 
-              select(words) %>% group_by(words) %>% 
-              summarise(total = n()) %>% 
-              arrange(total) %>% tail(20) %>% 
-              ggplot(aes(reorder(words,total), total)) +
-              geom_bar(stat = "identity", fill = cornegativo) + 
-              xlab("Palavras") + ylab("Frequência") +
-              ggtitle("Palavras mais frequentes") +
-              geom_text( aes (x = reorder(words,as.numeric(total)), y = total, label = total ) , vjust = 0, hjust = 0, size = 2 ) + 
-              coord_flip()
+           comments_dataframe <- comments_dataframe %>% filter(from_type == "ANGRY")
+           if(length(comments_dataframe$from_type) > 0){
+              text <- as.character(comments_dataframe$message)
+              
+              unigram <- getUnigram(text)
+              unigram %>% 
+                 filter(!is.na(words)) %>% 
+                 select(words) %>% group_by(words) %>% 
+                 summarise(total = n()) %>% 
+                 arrange(total) %>% tail(20) %>% 
+                 ggplot(aes(reorder(words,total), total)) +
+                 geom_bar(stat = "identity", fill = cornegativo) + 
+                 xlab("Palavras") + ylab("Frequência") +
+                 ggtitle("Palavras mais frequentes + ANGRY") +
+                 geom_text( aes (x = reorder(words,as.numeric(total)), y = total, label = total ) , vjust = 0, hjust = 0, size = 2 ) + 
+                 coord_flip()
+           }
         }
      }
   })
@@ -537,7 +562,7 @@ function(input, output, session) {
               ggplot(aes(reorder(words,total), total)) +
               geom_bar(stat = "identity", fill = cornegativo) + 
               xlab("Palavras") + ylab("Frequência") +
-              ggtitle("Palavras mais frequentes") +
+              ggtitle("Palavras mais frequentes + ANGRY") +
               geom_text( aes (x = reorder(words,as.numeric(total)), y = total, label = total ) , vjust = 0, hjust = 0, size = 2 ) + 
               coord_flip()
         }

@@ -7,7 +7,7 @@ dashboardPage(
                 "URL do post", 
                 value = ""
       ),
-      passwordInput("token", "Acess Token:"),
+      textInput("token", "Acess Token:", value=""),
       dateInput('date',
                 label = 'Data do post:',
                 value = Sys.Date()
@@ -16,12 +16,13 @@ dashboardPage(
       downloadButton("downloadComments", "Download Comments"),
       tags$hr("Baixar dados de Reações",br()),
       downloadButton("downloadReactions", "Download Reactions"),
-      tags$hr("Palavras a excluir das análises",br()),
-      textInput(inputId = "words",
-                label = "(palavras separadas por vírgula)", 
-                value = ""), 
+#      tags$hr("Palavras a excluir das análises",br()),
+#      textInput(inputId = "words",
+#                label = "(palavras separadas por vírgula)", 
+#                value = ""), 
       tags$hr("Dashboard",br()),
-      actionButton("dashboard", "Run", icon("refresh"), class = "btn btn-primary")
+      actionButton("dashboard", "Baixar", icon("refresh"), class = "btn btn-primary"),
+      actionButton(inputId="update", label="Plotar")
     )
   ),
   dashboardBody(
