@@ -80,24 +80,28 @@ function(input, output, session) {
   ############## DASHBOARD - ATUALIZAÇÃO DOS DADOS VIA CLIQUE EM BOTÃO 'RUN'
   # When the dashboard button is clicked, save the form data
   observeEvent(input$dashboard, {
-     url <- input$urlpost
-     id_pagina <- getFBID(url)
-     data <- input$date
-     fb_oauth <- input$token
-     data_inicio <- ymd(as.character(data)) + days(-1);
-     data_final <- ymd(as.character(data)) + days(1);
-     
-     mypage <- getPage(id_pagina, token = fb_oauth, feed=TRUE, since= as.character(data_inicio), until=as.character(data_final),n=20)
-     
-     id_post <- mypage$id[which(as.character(mypage$link)%in%url)]
-     
-     post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
-     sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
-        digest(input$url),
-        sep="");
-     saveData(post_dados$comments,names(post_dados$comments),prefix="comments",sufix)
-     saveData(post_dados$reactions,names(post_dados$reactions),prefix="reactions",sufix)
+     withProgress(message = 'Baixando...', value = 0, {
+        incProgress(1/5, detail = paste("0%"))
+        url <- input$urlpost
+        id_pagina <- getFBID(url)
+        data <- input$date
+        fb_oauth <- input$token
+        data_inicio <- ymd(as.character(data)) + days(-1);
+        data_final <- ymd(as.character(data)) + days(1);
+        incProgress(1/5, detail = paste("25%"))
+        mypage <- getPage(id_pagina, token = fb_oauth, feed=TRUE, since= as.character(data_inicio), until=as.character(data_final),n=20)
+        incProgress(1/5, detail = paste("50%"))
+        id_post <- mypage$id[which(as.character(mypage$link)%in%url)]
+        incProgress(1/5, detail = paste("75%"))
+        post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
+        incProgress(1/5, detail = paste("100%"))
+        sufix <- paste(
+           as.character(format(Sys.time(),"%d%m%Y")),
+           digest(input$url),
+           sep="");
+        saveData(post_dados$comments,names(post_dados$comments),prefix="comments",sufix)
+        saveData(post_dados$reactions,names(post_dados$reactions),prefix="reactions",sufix)
+     })
      
   })
   
