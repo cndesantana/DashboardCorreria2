@@ -123,7 +123,7 @@ function(input, output, session) {
      cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
      if(length(randomVals()) > 0){
         if(file.exists(reactions_timeseries_filename)){
-           post_reactions <- read.csv(reactions_timeseries_filename,sep=",")
+           post_reactions <- readtext(reactions_timeseries_filename)
            reactions <- c("LIKE","LOVE","HAHA","WOW","SAD", "ANGRY")
            counts <- array(0, length(reactions))
            for(i in 1:length(reactions)){
@@ -153,7 +153,7 @@ function(input, output, session) {
      prefix <- "reactions";
      reactions_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
      if(file.exists(reactions_timeseries_filename)){
-        post_reactions <- read.csv(reactions_timeseries_filename,sep=",")
+        post_reactions <- readtext(reactions_timeseries_filename)
         reactions <- c("LIKE","LOVE","HAHA","WOW","SAD", "ANGRY")
         counts <- array(0, length(reactions))
         for(i in 1:length(reactions)){
@@ -199,7 +199,8 @@ function(input, output, session) {
      cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
      if(length(randomVals()) > 0){
         if(file.exists(comments_timeseries_filename)){
-           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+           comments_dataframe <- readtext(comments_timeseries_filename)
+           comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
            
            timeseries <- comments_dataframe %>% mutate(
               day = ymd_hms(created_time) %>%
@@ -238,7 +239,8 @@ function(input, output, session) {
      prefix <- "comments";
      comments_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
      if(file.exists(comments_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+        comments_dataframe <- readtext(comments_timeseries_filename)
+        comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
         
         timeseries <- comments_dataframe %>% mutate(
            day = ymd_hms(created_time) %>%
@@ -294,7 +296,8 @@ function(input, output, session) {
      prefix <- "comments";
      comments_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
      if(file.exists(comments_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+        comments_dataframe <- readtext(comments_timeseries_filename)
+        comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
         
         text <- as.character(comments_dataframe$message)
         mydfm <- getDFMatrix(text);
@@ -315,7 +318,8 @@ function(input, output, session) {
      cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
      if(length(randomVals()) > 0){
         if(file.exists(comments_timeseries_filename)){
-           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+           comments_dataframe <- readtext(comments_timeseries_filename)
+           comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
            
            text <- as.character(comments_dataframe$message)
            mydfm <- getDFMatrix(text);
@@ -352,7 +356,8 @@ function(input, output, session) {
      cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
      if(length(randomVals()) > 0){
         if(file.exists(comments_timeseries_filename)){
-           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+           comments_dataframe <- readtext(comments_timeseries_filename)
+           comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
            text <- as.character(comments_dataframe$message)
            
            unigram <- getUnigram(text)
@@ -379,7 +384,8 @@ function(input, output, session) {
      prefix <- "comments";
      comments_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
      if(file.exists(comments_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
+        comments_dataframe <- readtext(comments_timeseries_filename)
+        comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
         text <- as.character(comments_dataframe$message)
         
         unigram <- getUnigram(text)
@@ -426,8 +432,9 @@ function(input, output, session) {
      cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
      if(length(randomVals()) > 0){
         if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){      
-           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
-           reactions_dataframe <- read.csv(reactions_timeseries_filename,sep=",")
+           comments_dataframe <- readtext(comments_timeseries_filename)
+           comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
+           reactions_dataframe <- readtext(reactions_timeseries_filename)
            comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
            
            comments_dataframe <- comments_dataframe %>% filter(from_type == "LOVE")
@@ -461,8 +468,9 @@ function(input, output, session) {
      prefix <- "reactions";
      reactions_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
      if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
-        reactions_dataframe <- read.csv(reactions_timeseries_filename,sep=",")
+        comments_dataframe <- readtext(comments_timeseries_filename)
+        comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
+        reactions_dataframe <- readtext(reactions_timeseries_filename)
         comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
         
         comments_dataframe <- comments_dataframe %>% filter(from_type == "LOVE")
@@ -514,8 +522,9 @@ function(input, output, session) {
      cat(paste("Numero de elementos: ",length(randomVals()),sep=""),sep="\n")
      if(length(randomVals()) > 0){
         if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){      
-           comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
-           reactions_dataframe <- read.csv(reactions_timeseries_filename,sep=",")
+           comments_dataframe <- readtext(comments_timeseries_filename)
+           comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
+           reactions_dataframe <- readtext(reactions_timeseries_filename)
            comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
            
            comments_dataframe <- comments_dataframe %>% filter(from_type == "ANGRY")
@@ -549,8 +558,9 @@ function(input, output, session) {
      prefix <- "reactions";
      reactions_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix)) 
      if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){
-        comments_dataframe <- read.csv(comments_timeseries_filename,sep=",")
-        reactions_dataframe <- read.csv(reactions_timeseries_filename,sep=",")
+        comments_dataframe <- readtext(comments_timeseries_filename)
+        comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
+        reactions_dataframe <- readtext(reactions_timeseries_filename)
         comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
         
         comments_dataframe <- comments_dataframe %>% filter(from_type == "ANGRY")
