@@ -1,3 +1,4 @@
+library(utf8)
 library(stringr)
 library(quanteda)
 library(readtext)
@@ -223,6 +224,7 @@ function(input, output, session) {
               group_by(date) %>%
               summarise(total = n()) %>% head(72)
            
+        timeseries <- timeseries %>% filter(ymd_hms(date) >= ymd_hms(paste(as.character(input$date),"12:00:00 UTC",sep=" ")))     
            myx <- timeseries$date
            mydate <- format(as.POSIXct(myx), format="%d/%m/%Y %H:%M")
            myy <- timeseries$total
@@ -262,7 +264,8 @@ function(input, output, session) {
            mutate(date = as.POSIXct(paste(paste(day,month,year,sep="/"),paste(hour,min,sep=":")),format = "%d/%m/%Y %H:%M")) %>%
            group_by(date) %>%
            summarise(total = n()) %>% head(72)
-        
+        timeseries <- timeseries %>% filter(ymd_hms(date) >= ymd_hms(paste(as.character(input$date),"12:00:00 UTC",sep=" ")))     
+
         myx <- timeseries$date
         mydate <- format(as.POSIXct(myx), format="%d/%m/%Y %H:%M")
         myy <- timeseries$total
