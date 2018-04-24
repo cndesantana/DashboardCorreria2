@@ -96,7 +96,7 @@ function(input, output, session) {
         post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
         incProgress(1/5, detail = paste("100%"))
         sufix <- paste(
-           as.character(format(Sys.time(),"%d%m%Y")),
+           as.character(format(input$date,"%d%m%Y")),
            digest(input$url),
            sep="");
         saveData(post_dados$comments,names(post_dados$comments),prefix="comments",sufix)
@@ -115,7 +115,7 @@ function(input, output, session) {
     
   output$reactionsPlot <- renderPlot({
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "reactions";
@@ -147,7 +147,7 @@ function(input, output, session) {
 
   plotReactionsTS = function(){
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "reactions";
@@ -191,7 +191,7 @@ function(input, output, session) {
   
   output$commentsPlot <- renderPlot({
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -233,7 +233,7 @@ function(input, output, session) {
   
   plotComentariosTS = function(){
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -290,7 +290,7 @@ function(input, output, session) {
   
   plotWordcloudTS = function(){
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -310,7 +310,7 @@ function(input, output, session) {
   
   output$wordcloudPlot <- renderPlot({
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -348,7 +348,7 @@ function(input, output, session) {
 
   output$unigramaPlot <- renderPlot({
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -378,7 +378,7 @@ function(input, output, session) {
   
   plotUnigrama = function(){
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -421,7 +421,7 @@ function(input, output, session) {
   
   output$loveunigramaPlot <- renderPlot({
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -434,8 +434,9 @@ function(input, output, session) {
         if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){      
            comments_dataframe <- readtext(comments_timeseries_filename)
            comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
+           names(comments_dataframe)[2] <- "from_id"
            reactions_dataframe <- readtext(reactions_timeseries_filename)
-           comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
+           comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id"));
            
            comments_dataframe <- comments_dataframe %>% filter(from_type == "LOVE")
            if(length(comments_dataframe$from_type) > 0){
@@ -460,7 +461,7 @@ function(input, output, session) {
   
   plotLoveUnigrama = function(){
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -470,8 +471,9 @@ function(input, output, session) {
      if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){
         comments_dataframe <- readtext(comments_timeseries_filename)
         comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
+        names(comments_dataframe)[2] <- "from_id"
         reactions_dataframe <- readtext(reactions_timeseries_filename)
-        comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
+        comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id"));
         
         comments_dataframe <- comments_dataframe %>% filter(from_type == "LOVE")
         if(length(comments_dataframe$from_type) > 0){
@@ -511,7 +513,7 @@ function(input, output, session) {
   
   output$angryunigramaPlot <- renderPlot({
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -524,8 +526,9 @@ function(input, output, session) {
         if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){      
            comments_dataframe <- readtext(comments_timeseries_filename)
            comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
+           names(comments_dataframe)[2] <- "from_id"
            reactions_dataframe <- readtext(reactions_timeseries_filename)
-           comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
+           comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id"));
            
            comments_dataframe <- comments_dataframe %>% filter(from_type == "ANGRY")
            if(length(comments_dataframe$from_type) > 0){
@@ -550,7 +553,7 @@ function(input, output, session) {
   
   plotAngryUnigrama = function(){
      sufix <- paste(
-        as.character(format(Sys.time(),"%d%m%Y")),
+        as.character(format(input$date,"%d%m%Y")),
         digest(input$url),
         sep="");
      prefix <- "comments";
@@ -560,8 +563,9 @@ function(input, output, session) {
      if(file.exists(comments_timeseries_filename) & file.exists(reactions_timeseries_filename)){
         comments_dataframe <- readtext(comments_timeseries_filename)
         comments_dataframe <- comments_dataframe[utf8_valid(comments_dataframe$message),]
+        names(comments_dataframe)[2] <- "from_id"
         reactions_dataframe <- readtext(reactions_timeseries_filename)
-        comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id","from_name"));
+        comments_dataframe <- left_join(comments_dataframe,reactions_dataframe,by=c("from_id"));
         
         comments_dataframe <- comments_dataframe %>% filter(from_type == "ANGRY")
         if(length(comments_dataframe$from_type) > 0){
