@@ -4,7 +4,15 @@ dashboardPage(
     sidebarMenu(
       menuItem("Dashboard", tabName = "dashboard"),
       textInput("urlpost", 
-                "URL do post", 
+                "URL do post no facebook", 
+                value = ""
+      ),
+      textInput("pagepost", 
+                "URL da página para onde aponta o post", 
+                value = ""
+      ),
+      textInput("messagepost", 
+                "Mensagem do post no facebook", 
                 value = ""
       ),
       textInput("token", "Acess Token:", value=""),
@@ -12,17 +20,17 @@ dashboardPage(
                 label = 'Data do post:',
                 value = Sys.Date()
       ),
-      tags$hr("Baixar dados de Comentários",br()),
+      actionButton("dashboard", "Raspar", icon("refresh"), class = "btn btn-primary"),
+      actionButton(inputId="update", label="Plotar"),      
+      tags$hr("Baixar planilha com Comentários",br()),
       downloadButton("downloadComments", "Download Comments"),
-      tags$hr("Baixar dados de Reações",br()),
+      tags$hr("Baixar planilha com Reações",br()),
       downloadButton("downloadReactions", "Download Reactions"),
 #      tags$hr("Palavras a excluir das análises",br()),
 #      textInput(inputId = "words",
 #                label = "(palavras separadas por vírgula)", 
 #                value = ""), 
-      tags$hr("Dashboard",br()),
-      actionButton("dashboard", "Baixar", icon("refresh"), class = "btn btn-primary"),
-      actionButton(inputId="update", label="Plotar")
+      tags$hr("Dashboard",br())
     )
   ),
   dashboardBody(

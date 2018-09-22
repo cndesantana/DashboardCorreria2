@@ -29,6 +29,9 @@ function(input, output, session) {
      },
      content = function(file) {
         url <- input$urlpost
+        page <- input$pagepost
+        msg <- input$messagepost
+        
         id_pagina <- getFBID(url)
         data <- input$date
         fb_oauth <- input$token
@@ -38,15 +41,23 @@ function(input, output, session) {
         mypage <- getPage(id_pagina, token = fb_oauth, feed=TRUE, since= as.character(data_inicio), until=as.character(data_final),n=20)
         
         id_post <- mypage$id[which(as.character(mypage$link)%in%url)]
-        post_dados <- getPost(id_post, token=fb_oauth, n= 10000, api="v2.12")
-        allmessages <- post_dados$comments %>% select(created_time,from_id,from_name,message);
-        names(allmessages) <- c("Data","Autor ID","Autor Nome","Conteúdo");
-        wb<-createWorkbook(type="xlsx")
-        TABLE_COLNAMES_STYLE <- CellStyle(wb) + Alignment(wrapText=TRUE, horizontal="ALIGN_CENTER")
-        sheet <- createSheet(wb, sheetName = "facebookdata")
-        setColumnWidth(sheet, colIndex=1:length(allmessages[1,]), 25)
-        addDataFrame(allmessages, sheet, colnamesStyle = TABLE_COLNAMES_STYLE, colStyle = TABLE_COLNAMES_STYLE, startColumn=1, row.names = FALSE)
-        saveWorkbook(wb, file)   
+        if(length(id_post)==0){
+          id_post <- mypage$id[which(as.character(mypage$link)%in%page)]
+          if(length(id_post)==0){
+            id_post <- mypage$id[which(as.character(mypage$message)%in%msg)]
+          }
+        }
+        if(length(id_post)>0){
+          post_dados <- getPost(id_post, token=fb_oauth, n= 10000)
+          allmessages <- post_dados$comments %>% select(created_time,from_id,from_name,message);
+          names(allmessages) <- c("Data","Autor ID","Autor Nome","Conteúdo");
+          wb<-createWorkbook(type="xlsx")
+          TABLE_COLNAMES_STYLE <- CellStyle(wb) + Alignment(wrapText=TRUE, horizontal="ALIGN_CENTER")
+          sheet <- createSheet(wb, sheetName = "facebookdata")
+          setColumnWidth(sheet, colIndex=1:length(allmessages[1,]), 25)
+          addDataFrame(allmessages, sheet, colnamesStyle = TABLE_COLNAMES_STYLE, colStyle = TABLE_COLNAMES_STYLE, startColumn=1, row.names = FALSE)
+          saveWorkbook(wb, file)   
+        }
      })
   
   output$downloadReactions<- downloadHandler(
@@ -55,6 +66,8 @@ function(input, output, session) {
      },
      content = function(file) {
         url <- input$urlpost
+        page <- input$pagepost
+        msg <- input$messagepost
         id_pagina <- getFBID(url)
         data <- input$date
         fb_oauth <- input$token
@@ -65,16 +78,24 @@ function(input, output, session) {
         mypage <- getPage(id_pagina, token = fb_oauth, feed=TRUE, since= as.character(data_inicio), until=as.character(data_final),n=20)
         
         id_post <- mypage$id[which(as.character(mypage$link)%in%url)]
+        if(length(id_post)==0){
+          id_post <- mypage$id[which(as.character(mypage$link)%in%page)]
+          if(length(id_post)==0){
+            id_post <- mypage$id[which(as.character(mypage$message)%in%msg)]
+          }
+        }
+        if(length(id_post)>0){
         
-        post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
-        allreactions <- post_dados$reactions %>% select(from_name, from_id, from_type);
-        names(allreactions) <- c("Autor Nome","Autor ID","Tipo");
-        wb<-createWorkbook(type="xlsx")
-        TABLE_COLNAMES_STYLE <- CellStyle(wb) + Alignment(wrapText=TRUE, horizontal="ALIGN_CENTER")
-        sheet <- createSheet(wb, sheetName = "facebookdata")
-        setColumnWidth(sheet, colIndex=1:length(allreactions[1,]), 25)
-        addDataFrame(allreactions, sheet, colnamesStyle = TABLE_COLNAMES_STYLE, colStyle = TABLE_COLNAMES_STYLE, startColumn=1, row.names = FALSE)
-        saveWorkbook(wb, file)       
+          post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
+          allreactions <- post_dados$reactions %>% select(from_name, from_id, from_type);
+          names(allreactions) <- c("Autor Nome","Autor ID","Tipo");
+          wb<-createWorkbook(type="xlsx")
+          TABLE_COLNAMES_STYLE <- CellStyle(wb) + Alignment(wrapText=TRUE, horizontal="ALIGN_CENTER")
+          sheet <- createSheet(wb, sheetName = "facebookdata")
+          setColumnWidth(sheet, colIndex=1:length(allreactions[1,]), 25)
+          addDataFrame(allreactions, sheet, colnamesStyle = TABLE_COLNAMES_STYLE, colStyle = TABLE_COLNAMES_STYLE, startColumn=1, row.names = FALSE)
+          saveWorkbook(wb, file)       
+        }
      })
  
   
@@ -84,6 +105,8 @@ function(input, output, session) {
      withProgress(message = 'Baixando...', value = 0, {
         incProgress(1/5, detail = paste("0%"))
         url <- input$urlpost
+        page <- input$pagepost
+        msg <- input$messagepost
         id_pagina <- getFBID(url)
         data <- input$date
         fb_oauth <- input$token
@@ -93,15 +116,23 @@ function(input, output, session) {
         mypage <- getPage(id_pagina, token = fb_oauth, feed=TRUE, since= as.character(data_inicio), until=as.character(data_final),n=20)
         incProgress(1/5, detail = paste("50%"))
         id_post <- mypage$id[which(as.character(mypage$link)%in%url)]
-        incProgress(1/5, detail = paste("75%"))
-        post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
-        incProgress(1/5, detail = paste("100%"))
-        sufix <- paste(
-           as.character(format(input$date,"%d%m%Y")),
-           digest(input$url),
-           sep="");
-        saveData(post_dados$comments,names(post_dados$comments),prefix="comments",sufix)
-        saveData(post_dados$reactions,names(post_dados$reactions),prefix="reactions",sufix)
+        if(length(id_post)==0){
+          id_post <- mypage$id[which(as.character(mypage$link)%in%page)]
+          if(length(id_post)==0){
+            id_post <- mypage$id[which(as.character(mypage$message)%in%msg)]
+          }
+        }
+        if(length(id_post)>0){
+          incProgress(1/5, detail = paste("75%"))
+          post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
+          incProgress(1/5, detail = paste("100%"))
+          sufix <- paste(
+             as.character(format(input$date,"%d%m%Y")),
+             digest(input$url),
+             sep="");
+          saveData(post_dados$comments,names(post_dados$comments),prefix="comments",sufix)
+          saveData(post_dados$reactions,names(post_dados$reactions),prefix="reactions",sufix)
+        }
      })
      
   })
@@ -117,7 +148,7 @@ function(input, output, session) {
   output$reactionsPlot <- renderPlot({
      sufix <- paste(
         as.character(format(input$date,"%d%m%Y")),
-        digest(input$url),
+        digest(input$urlpost),
         sep="");
      prefix <- "reactions";
      reactions_timeseries_filename <- file.path(outputDir,sprintf("%s_%s.csv", prefix, sufix))         
