@@ -48,7 +48,7 @@ function(input, output, session) {
           }
         }
         if(length(id_post)>0){
-          post_dados <- getPost(id_post, token=fb_oauth, n= 10000)
+          post_dados <- getPost(id_post, token=fb_oauth, n = 1000000, comments = TRUE, likes = FALSE, n.likes = 1, n.comments = 1000000)
           allmessages <- post_dados$comments %>% select(created_time,from_id,from_name,message);
           names(allmessages) <- c("Data","Autor ID","Autor Nome","Conteúdo");
           wb<-createWorkbook(type="xlsx")
@@ -86,7 +86,7 @@ function(input, output, session) {
         }
         if(length(id_post)>0){
         
-          post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
+          post_dados <- getPost(id_post, token=fb_oauth, n = 1000000, comments = TRUE, likes = FALSE, n.likes = 1, n.comments = 1000000)
           allreactions <- post_dados$reactions %>% select(from_name, from_id, from_type);
           names(allreactions) <- c("Autor Nome","Autor ID","Tipo");
           wb<-createWorkbook(type="xlsx")
@@ -124,7 +124,7 @@ function(input, output, session) {
         }
         if(length(id_post)>0){
           incProgress(1/5, detail = paste("75%"))
-          post_dados <- getPost(id_post, token=fb_oauth, n= 10000, reactions=TRUE, api="v2.12")
+          post_dados <- getPost(id_post, token=fb_oauth, n = 1000000, comments = TRUE, likes = FALSE, n.likes = 1, n.comments = 1000000)
           incProgress(1/5, detail = paste("100%"))
           sufix <- paste(
              as.character(format(input$date,"%d%m%Y")),
